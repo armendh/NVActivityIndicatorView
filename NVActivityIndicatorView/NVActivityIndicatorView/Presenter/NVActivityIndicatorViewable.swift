@@ -51,7 +51,8 @@ public extension NVActivityIndicatorViewable where Self: UIViewController {
      - parameter minimumDisplayTime:   minimum display time of UI blocker.
      */
     public func startAnimating(
-        _ size: CGSize? = nil,
+        _ viewController: UIViewController,
+        size: CGSize? = nil,
         message: String? = nil,
         messageFont: UIFont? = nil,
         type: NVActivityIndicatorType? = nil,
@@ -60,7 +61,7 @@ public extension NVActivityIndicatorViewable where Self: UIViewController {
         displayTimeThreshold: Int? = nil,
         minimumDisplayTime: Int? = nil,
         backgroundColor: UIColor? = nil,
-        textColor: UIColor? = nil) {
+        textColor: UIColor? = nil) -> NVActivityIndicatorPresenter{
         let activityData = ActivityData(size: size,
                                         message: message,
                                         messageFont: messageFont,
@@ -72,13 +73,9 @@ public extension NVActivityIndicatorViewable where Self: UIViewController {
                                         backgroundColor: backgroundColor,
                                         textColor: textColor)
 
-        NVActivityIndicatorPresenter.sharedInstance.startAnimating(activityData)
-    }
-
-    /**
-     Remove UI blocker.
-     */
-    public func stopAnimating() {
-        NVActivityIndicatorPresenter.sharedInstance.stopAnimating()
+        let presenter = NVActivityIndicatorPresenter(withViewController: viewController)
+        presenter.startAnimating(activityData)
+        
+        return presenter
     }
 }
