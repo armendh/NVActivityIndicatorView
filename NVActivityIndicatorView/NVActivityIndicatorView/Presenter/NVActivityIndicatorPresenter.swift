@@ -100,7 +100,7 @@ public final class ActivityData {
 }
 
 /// Presenter that displays NVActivityIndicatorView as UI blocker.
-public final class NVActivityIndicatorPresenter {
+public class NVActivityIndicatorPresenter: NSObject {
     private enum State {
         case waitingToShow
         case showed
@@ -118,14 +118,21 @@ public final class NVActivityIndicatorPresenter {
 
         return label
     }()
+    
+    private var viewController: UIViewController!
 
     private var state: State = .hidden
     private let startAnimatingGroup = DispatchGroup()
 
-    /// Shared instance of `NVActivityIndicatorPresenter`.
-    public static let sharedInstance = NVActivityIndicatorPresenter()
-
-    private init() {}
+    convenience init(withViewController viewController: UIViewController){
+        self.init()
+        
+        self.viewController = viewController
+    }
+    
+    private override init(){
+        super.init()
+    }
 
     // MARK: - Public interface
 
@@ -218,19 +225,19 @@ public final class NVActivityIndicatorPresenter {
             containerView.addConstraint(spacingConstraint)
         }())
 
-        guard let keyWindow = UIApplication.shared.keyWindow else { return }
+        guard let view = viewController?.view else { return }
 
-        keyWindow.addSubview(containerView)
+        view.addSubview(containerView)
         state = .showed
 
         // Add constraints for `containerView`.
         ({
-            let leadingConstraint = NSLayoutConstraint(item: keyWindow, attribute: .leading, relatedBy: .equal, toItem: containerView, attribute: .leading, multiplier: 1, constant: 0)
-            let trailingConstraint = NSLayoutConstraint(item: keyWindow, attribute: .trailing, relatedBy: .equal, toItem: containerView, attribute: .trailing, multiplier: 1, constant: 0)
-            let topConstraint = NSLayoutConstraint(item: keyWindow, attribute: .top, relatedBy: .equal, toItem: containerView, attribute: .top, multiplier: 1, constant: 0)
-            let bottomConstraint = NSLayoutConstraint(item: keyWindow, attribute: .bottom, relatedBy: .equal, toItem: containerView, attribute: .bottom, multiplier: 1, constant: 0)
+            let leadingConstraint = NSLayoutConstraint(item: view, attribute: .leading, relatedBy: .equal, toItem: containerView, attribute: .leading, multiplier: 1, constant: 0)
+            let trailingConstraint = NSLayoutConstraint(item: view, attribute: .trailing, relatedBy: .equal, toItem: containerView, attribute: .trailing, multiplier: 1, constant: 0)
+            let topConstraint = NSLayoutConstraint(item: view, attribute: .top, relatedBy: .equal, toItem: containerView, attribute: .top, multiplier: 1, constant: 0)
+            let bottomConstraint = NSLayoutConstraint(item: view, attribute: .bottom, relatedBy: .equal, toItem: containerView, attribute: .bottom, multiplier: 1, constant: 0)
 
-            keyWindow.addConstraints([leadingConstraint, trailingConstraint, topConstraint, bottomConstraint])
+            view.addConstraints([leadingConstraint, trailingConstraint, topConstraint, bottomConstraint])
         }())
 
         DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(activityData.minimumDisplayTime)) {
@@ -247,9 +254,9 @@ public final class NVActivityIndicatorPresenter {
     }
 
     private func hide() {
-        guard let keyWindow = UIApplication.shared.keyWindow else { return }
+        guard let view = viewController?.view else { return }
 
-        for item in keyWindow.subviews
+        for item in view.subviews
             where item.restorationIdentifier == restorationIdentifier {
             item.removeFromSuperview()
         }
