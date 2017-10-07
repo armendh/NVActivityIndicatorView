@@ -51,7 +51,7 @@ public extension NVActivityIndicatorViewable where Self: UIViewController {
      - parameter minimumDisplayTime:   minimum display time of UI blocker.
      */
     public func startAnimating(
-        _ viewController: UIViewController,
+        _ view: UIView,
         size: CGSize? = nil,
         message: String? = nil,
         messageFont: UIFont? = nil,
@@ -73,7 +73,7 @@ public extension NVActivityIndicatorViewable where Self: UIViewController {
                                         backgroundColor: backgroundColor,
                                         textColor: textColor)
 
-        let presenter = NVActivityIndicatorPresenter(withViewController: viewController)
+        let presenter = NVActivityIndicatorPresenter(view: view)
         presenter.startAnimating(activityData)
         
         return presenter
