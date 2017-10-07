@@ -119,15 +119,15 @@ public class NVActivityIndicatorPresenter: NSObject {
         return label
     }()
     
-    private var viewController: UIViewController!
+    private var view: UIView!
 
     private var state: State = .hidden
     private let startAnimatingGroup = DispatchGroup()
 
-    convenience init(withViewController viewController: UIViewController){
+    convenience init(view: UIView){
         self.init()
         
-        self.viewController = viewController
+        self.view = view
     }
     
     private override init(){
@@ -183,7 +183,7 @@ public class NVActivityIndicatorPresenter: NSObject {
     // MARK: - Helpers
 
     private func show(with activityData: ActivityData) {
-        let containerView = UIView(frame: UIScreen.main.bounds)
+        let containerView = UIView()
 
         containerView.backgroundColor = activityData.backgroundColor
         containerView.restorationIdentifier = restorationIdentifier
@@ -201,6 +201,8 @@ public class NVActivityIndicatorPresenter: NSObject {
 
         // Add constraints for `activityIndicatorView`.
         ({
+            containerView.layer.cornerRadius = 10
+            
             let xConstraint = NSLayoutConstraint(item: containerView, attribute: .centerX, relatedBy: .equal, toItem: activityIndicatorView, attribute: .centerX, multiplier: 1, constant: 0)
             let yConstraint = NSLayoutConstraint(item: containerView, attribute: .centerY, relatedBy: .equal, toItem: activityIndicatorView, attribute: .centerY, multiplier: 1, constant: 0)
 
@@ -225,19 +227,16 @@ public class NVActivityIndicatorPresenter: NSObject {
             containerView.addConstraint(spacingConstraint)
         }())
 
-        guard let view = viewController?.view else { return }
-
         view.addSubview(containerView)
         state = .showed
 
         // Add constraints for `containerView`.
         ({
-            let leadingConstraint = NSLayoutConstraint(item: view, attribute: .leading, relatedBy: .equal, toItem: containerView, attribute: .leading, multiplier: 1, constant: 0)
-            let trailingConstraint = NSLayoutConstraint(item: view, attribute: .trailing, relatedBy: .equal, toItem: containerView, attribute: .trailing, multiplier: 1, constant: 0)
-            let topConstraint = NSLayoutConstraint(item: view, attribute: .top, relatedBy: .equal, toItem: containerView, attribute: .top, multiplier: 1, constant: 0)
-            let bottomConstraint = NSLayoutConstraint(item: view, attribute: .bottom, relatedBy: .equal, toItem: containerView, attribute: .bottom, multiplier: 1, constant: 0)
-
-            view.addConstraints([leadingConstraint, trailingConstraint, topConstraint, bottomConstraint])
+            containerView.translatesAutoresizingMaskIntoConstraints = false
+            containerView.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
+            containerView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+            containerView.heightAnchor.constraint(equalToConstant: 250).isActive = true
+            containerView.widthAnchor.constraint(equalToConstant: 250).isActive = true
         }())
 
         DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(activityData.minimumDisplayTime)) {
@@ -254,8 +253,6 @@ public class NVActivityIndicatorPresenter: NSObject {
     }
 
     private func hide() {
-        guard let view = viewController?.view else { return }
-
         for item in view.subviews
             where item.restorationIdentifier == restorationIdentifier {
             item.removeFromSuperview()
